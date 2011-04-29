@@ -65,26 +65,6 @@ upgrade() ->
 init([]) ->
     setup_ets_tables(),
 
-    Ip = case os:getenv("FOLSOM_IP") of false -> "127.0.0.1"; Any -> Any end,
-    Port = case os:getenv("FOLSOM_PORT") of false -> "5565"; Any1 -> Any1 end,
-    LogDir = case os:getenv("FOLSOM_LOG_DIR") of false -> "priv/log"; Any2 -> Any2 end,
-    {ok, Dispatch} = file:consult(filename:join(
-                         [filename:dirname(code:which(?MODULE)),
-                          "..", "priv", "dispatch.conf"])),
-    WebConfig = [
-                 {ip, Ip},
-                 {port, Port},
-                 {log_dir, LogDir},
-                 {dispatch, Dispatch}
-                ],
-
-    Web = {webmachine_mochiweb,
-           {webmachine_mochiweb, start, [WebConfig]},
-           permanent,
-           5000,
-           worker,
-           dynamic},
-
     EventMgr = {folsom_event_manager,
                 {gen_event, start_link, [{local, folsom_event_manager}]},
                 permanent,
@@ -92,7 +72,7 @@ init([]) ->
                 worker,
                 dynamic},
 
-    Processes = [Web, EventMgr],
+    Processes = [EventMgr],
     {ok, { {one_for_one, 10, 10}, Processes} }.
 
 setup_ets_tables() ->

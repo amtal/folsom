@@ -34,10 +34,6 @@ run_test() ->
     folsom_erlang_checks:check_metrics(),
     folsom_erlang_checks:vm_metrics(),
 
-    ibrowse:start(),
-    folsom_http_checks:run(),
-    ibrowse:stop(),
-
     folsom_erlang_checks:delete_metrics(),
     
     folsom_metric_checks:histograms(),

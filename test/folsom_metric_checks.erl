@@ -16,32 +16,24 @@
 
 
 %%%-------------------------------------------------------------------
-%%% File:      folsom_tests.erl
-%%% @author    joe williams <j@boundary.com>
-%%% @doc
+%%% File:      folsom_metric_checks.erl
+%%% @author    amtal <alex.kropivny@gmail.com>
+%%% @doc External interface tests.
 %%% @end
 %%%------------------------------------------------------------------
 
--module(folsom_tests).
+-module(folsom_metric_checks).
 
 -include_lib("eunit/include/eunit.hrl").
 
-run_test() ->
-    folsom:start(),
+-export([ histograms/0
+        ]).
 
-    folsom_erlang_checks:create_metrics(),
-    folsom_erlang_checks:populate_metrics(),
-    folsom_erlang_checks:check_metrics(),
-    folsom_erlang_checks:vm_metrics(),
-
-    ibrowse:start(),
-    folsom_http_checks:run(),
-    ibrowse:stop(),
-
-    folsom_erlang_checks:delete_metrics(),
+-define(FM, folsom_metrics).
     
-    folsom_metric_checks:histograms(),
-
-    folsom:stop().
-
-
+histograms() ->
+    ok = ?FM:new_histogram(funcalls,uniform),
+    5 = ?FM:histogram_timed_update(funcalls, fun()->abs(-5) end),
+    5 = ?FM:histogram_timed_update(funcalls, fun(X)->abs(X) end, [-5]),
+    5 = ?FM:histogram_timed_update(funcalls, erlang, abs, [-5]),
+    [_,_,_] = ?FM:get_histogram_sample(funcalls).

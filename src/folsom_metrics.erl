@@ -106,20 +106,19 @@ get_histogram_sample(Name) ->
 get_history_values(Name, Count) ->
     folsom_event:get_history_values(Name, Count).
 
+%% @doc Fun/funcall instrumentation.
+%%
+%% If an exception occurs, time is not logged.
 histogram_timed_update(Name, Fun) ->
-    Start = folsom_utils:now_epoch_micro(),
-    Fun(),
-    Stop = folsom_utils:now_epoch_micro(),
-    notify({Name, Stop - Start}).
+    histogram_timed_update(Name, Fun, []).
 
 histogram_timed_update(Name, Fun, Args) ->
     Start = folsom_utils:now_epoch_micro(),
-    erlang:apply(Fun, Args),
+    Result = erlang:apply(Fun, Args),
     Stop = folsom_utils:now_epoch_micro(),
-    notify({Name, Stop - Start}).
+    notify({Name, Stop - Start}),
+    Result.
 
 histogram_timed_update(Name, Mod, Fun, Args) ->
-    Start = folsom_utils:now_epoch_micro(),
-    erlang:apply(Mod, Fun, Args),
-    Stop = folsom_utils:now_epoch_micro(),
-    notify({Name, Stop - Start}).
+    Run = fun()->erlang:apply(Mod, Fun, Args) end,
+    histogram_timed_update(Name, Run, []).

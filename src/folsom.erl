@@ -25,6 +25,24 @@
 -module(folsom).
 -export([start/0, start_link/0, stop/0]).
 
+-export([go/0]).
+
+go() -> 
+    start(),
+    folsom_metrics:new_histogram(foo,exdec),
+    {_,S,_} = now(),
+    [spawn_link(fun()->faucet(0,S) end)||_<-lists:seq(1,10)].
+
+faucet(N,S0) ->
+    gen_event:sync_notify(folsom_event_manager,{foo,1}),
+    case now() of
+        {_,S0,_} -> faucet(N+1,S0);
+        {_,Sn,_} -> 
+            io:format("~p~n", [N]),
+            faucet(0,Sn)
+    end.
+    
+
 ensure_started(App) ->
     case application:start(App) of
         ok ->

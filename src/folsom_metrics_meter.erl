@@ -90,4 +90,4 @@ calc_mean_rate(_, 0) ->
     0.0;
 calc_mean_rate(Start, Count) ->
     Elapsed = folsom_utils:now_epoch_micro() - Start,
-    Count / Elapsed.
+    Count * 1000000 / Elapsed.
